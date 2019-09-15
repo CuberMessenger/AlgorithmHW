@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <string>
+#include <algorithm>
 using namespace std;
 
 //输出所有不同的组合
@@ -21,16 +22,21 @@ void FindAllCombination(string a) {
 	cout << "Num of Combination: " << x - 1 << "\n\n";
 }
 
-//简单地按照递归关系实现整数分解的方式个数
-int IntegerDivision(int n, int m) {
-	if (m == 1)
-		return 1;
-	if (n < m)
-		return IntegerDivision(n, n);
-	if (n == m)
-		return 1 + IntegerDivision(n, n - 1);
-	if (n > m && m > 1)
-		return IntegerDivision(n, m - 1) + IntegerDivision(n - m, m);
+//////////////////////////////////////////////////////////
+
+void PrintDivision(string s, int n, int m) {
+	if (n <= 0) {
+		//如下组合的字符串形如+1+1+...+2+2+...
+		//调整为从大到小，并去掉多余加号
+		s.erase(s.begin());
+		reverse(s.begin(), s.end());
+		cout << s << endl;
+		return;
+	}
+
+	//遍历最大因子1~n，当最大因子为m时，在PD(n-m, m)的解（可能有若干个，所以用递归比较方便）上再加一个m就是PD(n, m)的解
+	for (int i = m; i <= n; i++)
+		PrintDivision(s + "+" + (char)(i + '0'), n - i, i);
 }
 
 #define N 1001
@@ -74,6 +80,7 @@ int main() {
 	while (cin >> n, n > 0) {
 		//cout << IntegerDivision(n, n) << endl;
 
-		cout << IntegerDivisionDP(n) << endl;
+		//cout << IntegerDivisionDP(n) << endl;
+		PrintDivision("", n, 1);
 	}
 }
