@@ -70,7 +70,7 @@ int IntegerDivisionDP(int n) {
 }
 
 
-int main() {
+int week3_main() {
 	string a;
 	while (cin >> a, a != "end") {
 		FindAllCombination(a);
@@ -83,4 +83,5 @@ int main() {
 		//cout << IntegerDivisionDP(n) << endl;
 		PrintDivision("", n, 1);
 	}
+	return 0;
 }
