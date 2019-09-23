@@ -231,6 +231,75 @@ BigInteger SignedFastMultiply(BigInteger x, BigInteger y) {
 	return f;
 }
 
+////////////////////////////////////////////////////////////////
+void Swap(int& a, int& b) {
+	int temp = a;
+	a = b;
+	b = temp;
+}
+
+int Partition5(int list[], int left, int right) {
+	int i = left + 1;
+	while (i <= right) {
+		int j = i;
+		while (j > left && list[j - 1] > list[j]) {
+			Swap(list[j - 1], list[j]);
+			j--;
+		}
+		i++;
+	}
+	return (left + right) / 2;
+}
+
+int Partition(int list[], int left, int right, int pivotIndex, int n) {
+	int val = list[pivotIndex];
+	Swap(list[pivotIndex], list[right]);
+	int index = left;
+	for (int i = left; i < right; i++)
+		if (list[i] < val)
+			Swap(list[index++], list[i]);
+
+	int indexEq = index;
+	for (int i = index; i < right; i++)
+		if (list[i] == val)
+			Swap(list[indexEq++], list[i]);
+
+	Swap(list[right], list[indexEq]);
+	if (n < index)
+		return index;
+	if (n <= indexEq)
+		return n;
+	return indexEq;
+}
+
+int Pivot(int list[], int left, int right);
+
+int Select(int list[], int left, int right, int n) {
+	while (true) {
+		if (left == right)
+			return left;
+		int index = Pivot(list, left, right);
+		index = Partition(list, left, right, index, n);
+		if (n == index)
+			return n;
+		else if (n < index)
+			right = index - 1;
+		else
+			left = index + 1;
+	}
+}
+
+int Pivot(int list[], int left, int right) {
+	if (right - left < 5)
+		return Partition5(list, left, right);
+	for (int i = left; i < right; i += 5) {
+		int subRight = (i + 4) > right ? right : i + 4;
+		int median = Partition5(list, i, subRight);
+		Swap(list[median], list[left + ((i - left) / 5)]);
+	}
+	int mid = ((right - left) / 10) + left + 1;
+	return Select(list, left, left + ((right - left) / 5), mid);
+}
 
 int main() {
 	string a, b;
@@ -247,4 +316,15 @@ int main() {
 		ans.Print();
 		printf("\n\n");
 	}
+
+	int arr[] = { 8, 6, 1 ,2 ,9 ,4 ,3 ,7 ,5 };
+	int n;
+	for (int i = 0; i < 9; i++)
+		cout << arr[i] << ' ';
+	cout << endl;
+	while (cin >> n, n != 0) {
+		cout << "The " << n << "th smallest number in the array is: " << Select(arr, 0, 9, n) << endl;
+	}
+
+	return 0;
 }
