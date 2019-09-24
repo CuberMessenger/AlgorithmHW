@@ -301,7 +301,7 @@ int Pivot(int list[], int left, int right) {
 	return Select(list, left, left + ((right - left) / 5), mid);
 }
 
-int main() {
+int week4_main() {
 	string a, b;
 	while (cin >> a >> b, a != "end") {
 		vector<int> an, bn;
