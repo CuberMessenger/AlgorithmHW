@@ -53,11 +53,9 @@ vector<string> GetAllPossibleParentheses(int i, int j) {
 		vector<string> left = GetAllPossibleParentheses(i, k);
 		vector<string> right = GetAllPossibleParentheses(k + 1, j);
 
-		for (vector<string>::iterator it = left.begin(); it != left.end(); it++) {
-			for (vector<string>::iterator jt = right.begin(); jt != right.end(); jt++) {
-				ans.push_back("(" + *it + ")(" + *jt + ")");
-			}
-		}
+		for (vector<string>::iterator it = left.begin(); it != left.end(); it++)
+			for (vector<string>::iterator jt = right.begin(); jt != right.end(); jt++)
+				ans.push_back(((*it).length() == 1 ? *it : "(" + *it + ")")+((*jt).length() == 1 ? *jt : "(" + *jt + ")"));
 	}
 
 	return ans;
@@ -77,21 +75,6 @@ int main() {
 
 	while (cin >> n, n != 0) {
 		vector<string> ans = GetAllPossibleParentheses(1, n);
-		for (vector<string>::iterator it = ans.begin(); it != ans.end(); it++) {
-			for (int i = 0; i < (*it).size(); i++) {
-				if ((*it)[i] != '(' && (*it)[i] != ')') {
-					if (i == 0 || i == (*it).size() - 1) {
-						continue;
-					}
-					if ((*it)[i - 1] == '(' && (*it)[i + 1] == ')') {
-						(*it).erase(i - 1, 1);
-						i--;
-						(*it).erase(i + 1, 1);
-					}
-				}
-			}
-		}
-
 		for (vector<string>::iterator it = ans.begin(); it != ans.end(); it++) {
 			cout << *it << endl;
 		}
