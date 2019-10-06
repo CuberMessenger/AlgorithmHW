@@ -10,9 +10,6 @@ int LCS(string x, string y, int** c, int** s) {
 	int n = y.size();
 	for (int i = 1; i <= m; i++) {
 		for (int j = 1; j <= n; j++) {
-			if (i == 2 && j == 1) {
-				i = i;
-			}
 			if (x[i - 1] == y[j - 1]) {
 				c[i][j] = c[i - 1][j - 1] + 1;
 				s[i][j] = 1;
@@ -79,7 +76,7 @@ int main() {
 		}
 
 		cout << LCS(x, y, c, s) << endl;
-		PrintLCS(x, s, m, n);
+		//PrintLCS(x, s, m, n);
 		cout << endl;
 		PrintLCSWithoutS(x, y, c, m, n);
 	}
