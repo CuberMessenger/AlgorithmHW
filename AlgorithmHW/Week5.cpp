@@ -61,7 +61,7 @@ vector<string> GetAllPossibleParentheses(int i, int j) {
 	return ans;
 }
 
-int main() {
+int week5_main() {
 	int n;
 	while (cin >> n, n != 0) {
 		//cout << GetNumberOfCase(n) << endl << endl;
@@ -80,4 +80,5 @@ int main() {
 		}
 		cout << endl;
 	}
+	return 0;
 }
