@@ -59,7 +59,7 @@ void PrintLCSWithoutS(string x, string y, int** c, int i, int j) {
 	}
 }
 
-int main() {
+int main_2019_9_30() {
 	string x, y;
 	while (cin >> x >> y, x != "end") {
 		int m = x.size();
