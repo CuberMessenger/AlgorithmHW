@@ -66,6 +66,7 @@ struct Tree {
 		this->right = nullptr;
 	}
 };
+
 vector<Tree*> roots;
 
 Tree* BuildTree(int i, int j, int level, int** s, double* a, double* b) {
@@ -141,6 +142,7 @@ int main() {
 
 	OptimalBinarySearchTree(a, b, N, m, s, w);
 	cout << endl << ParenthesesTree(1, N, s) << endl;
+
 	Tree* root = BuildTree(1, N, 1, s, a, b);
 	cout << roots.size() << endl;
 	cout << "以" << root->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(root) << endl;
