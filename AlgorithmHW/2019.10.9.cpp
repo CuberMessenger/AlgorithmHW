@@ -67,39 +67,51 @@ struct Tree {
 	}
 };
 
+vector<Tree*> roots;
+
 Tree* BuildTree(int i, int j, int level, int** s, double* a, double* b) {
 	if (j <= i - 1)
 		return nullptr;
 
 	int k = s[i][j];
-	Tree* ans = new Tree("x" + IntegerToString(i), level, b[i]);
+	Tree* ans = new Tree("x" + IntegerToString(k), level, b[k]);
 	if (j == i) {
 
-		Tree* left = new Tree("x" + IntegerToString(k - 1), level, a[k - 1]);
-		Tree* right = new Tree("x" + IntegerToString(k + 1), level, a[k + 1]);
+		Tree* left = new Tree("d" + IntegerToString(k - 1), level, a[k - 1]);
+		Tree* right = new Tree("d" + IntegerToString(k), level, a[k]);
 		ans->left = left;
-		ans->right = right;
-		return ans;
-	}
-
-	//left is virtual?
-	if (i == k) {
-		Tree* left = new Tree("x" + IntegerToString(k - 1), level, a[k - 1]);
-		ans->left = left;
-	}
-	else {
-		ans->left = BuildTree(i, k - 1, level + 1, s, a, b);
-	}
-
-	//right is virtual?
-	if (j == k) {
-		Tree* right = new Tree("x" + IntegerToString(k + 1), level, a[k + 1]);
 		ans->right = right;
 	}
 	else {
-		ans->right = BuildTree(k + 1, j, level + 1, s, a, b);
+		//left is virtual?
+		if (i == k) {
+			Tree* left = new Tree("d" + IntegerToString(k - 1), level, a[k - 1]);
+			ans->left = left;
+		}
+		else {
+			ans->left = BuildTree(i, k - 1, level + 1, s, a, b);
+		}
+
+		//right is virtual?
+		if (j == k) {
+			Tree* right = new Tree("d" + IntegerToString(k), level, a[k]);
+			ans->right = right;
+		}
+		else {
+			ans->right = BuildTree(k + 1, j, level + 1, s, a, b);
+		}
 	}
+	roots.push_back(ans);
 	return ans;
+}
+
+double CalculateAverageCost(Tree* root) {
+	if (root == nullptr)
+		return 0.0;
+	if (root->left == nullptr || root->right == nullptr)
+		return root->p * root->level;
+	else
+		return CalculateAverageCost(root->left) + root->p * root->level + CalculateAverageCost(root->right);
 }
 
 int main() {
@@ -111,7 +123,7 @@ int main() {
 
 	double a[N + 1] = { 0.05,0.1,0.05,0.05,0.05,0.1 };
 
-	double b[N + 1] = { -1,0.15,0.1,0.05,0.1,0.2 };
+	double b[N + 1] = { 0.0,0.15,0.1,0.05,0.1,0.2 };
 
 
 	int** s = new int* [N + 1];
@@ -132,4 +144,11 @@ int main() {
 
 	cout << endl << ParenthesesTree(1, N, s) << endl;
 
+	Tree* root = BuildTree(1, N, 1, s, a, b);
+	cout << roots.size() << endl;
+	cout << "以" << root->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(root) << endl;
+
+	for (int i = 0; i < N; i++) {
+		cout << "以" << roots[i]->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(roots[i]) << endl;
+	}
 }
