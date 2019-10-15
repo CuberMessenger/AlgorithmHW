@@ -115,16 +115,10 @@ double CalculateAverageCost(Tree* root) {
 }
 
 int main() {
-	//vitual key p
-	//double a[N + 1] = { 0.10, 0.07, 0.01, 0.06, 0.02, 0.05, 0.03, 0.04, 0.03, 0.04, 0.05 };
+	//virtual key p
+	double a[N + 1] = { 0.10, 0.07, 0.01, 0.06, 0.02, 0.05, 0.03, 0.04, 0.03, 0.04, 0.05 };
 	//key p
-	//double b[N + 1] = { 0.00, 0.01, 0.09, 0.02, 0.08, 0.06, 0.04, 0.05, 0.03, 0.05, 0.07 };
-
-
-	double a[N + 1] = { 0.05,0.1,0.05,0.05,0.05,0.1 };
-
-	double b[N + 1] = { 0.0,0.15,0.1,0.05,0.1,0.2 };
-
+	double b[N + 1] = { 0.00, 0.01, 0.09, 0.02, 0.08, 0.06, 0.04, 0.05, 0.03, 0.05, 0.07 };
 
 	int** s = new int* [N + 1];
 	for (int i = 0; i < N + 1; i++) {
@@ -143,9 +137,7 @@ int main() {
 	OptimalBinarySearchTree(a, b, N, m, s, w);
 	cout << endl << ParenthesesTree(1, N, s) << endl;
 
-	Tree* root = BuildTree(1, N, 1, s, a, b);
-	cout << roots.size() << endl;
-	cout << "以" << root->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(root) << endl;
+	BuildTree(1, N, 1, s, a, b);
 
 	for (int i = 0; i < N; i++) {
 		cout << "以" << roots[i]->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(roots[i]) << endl;
