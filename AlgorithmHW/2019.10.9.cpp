@@ -9,7 +9,7 @@ using namespace std;
 
 void OptimalBinarySearchTree(double* a, double* b, int n, double** m, int** s, double** w) {
 	for (int i = 1; i <= n + 1; i++) {
-		m[i][i - 1] = a[i - 1];
+		m[i][i - 1] = 0;
 		w[i][i - 1] = a[i - 1];
 	}
 
@@ -111,7 +111,7 @@ int main() {
 
 	double a[N + 1] = { 0.05,0.1,0.05,0.05,0.05,0.1 };
 
-	double b[N + 1] = { -1,0.15,0.1,0.05,0.1,0.2 };
+	double b[N + 1] = { 0.0,0.15,0.1,0.05,0.1,0.2 };
 
 
 	int** s = new int* [N + 1];
@@ -129,7 +129,5 @@ int main() {
 	}
 
 	OptimalBinarySearchTree(a, b, N, m, s, w);
-
 	cout << endl << ParenthesesTree(1, N, s) << endl;
-
 }
