@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="2019.10.23.cpp" />
     <ClCompile Include="2019.10.9.cpp" />
     <ClCompile Include="2019.9.30.cpp" />
     <ClCompile Include="Week3.cpp" />

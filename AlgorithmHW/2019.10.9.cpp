@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-#define N 5
+#define N 10
 
 void OptimalBinarySearchTree(double* a, double* b, int n, double** m, int** s, double** w) {
 	for (int i = 1; i <= n + 1; i++) {
@@ -114,7 +114,7 @@ double CalculateAverageCost(Tree* root) {
 		return CalculateAverageCost(root->left) + root->p * root->level + CalculateAverageCost(root->right);
 }
 
-int main() {
+int main_2019_10_9() {
 	//virtual key p
 	double a[N + 1] = { 0.10, 0.07, 0.01, 0.06, 0.02, 0.05, 0.03, 0.04, 0.03, 0.04, 0.05 };
 	//key p
@@ -142,4 +142,5 @@ int main() {
 	for (int i = 0; i < N; i++) {
 		cout << "以" << roots[i]->name << "为根的子树的平均比较次数为：" << CalculateAverageCost(roots[i]) << endl;
 	}
+	return 0;
 }
