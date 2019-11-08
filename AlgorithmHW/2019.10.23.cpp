@@ -83,7 +83,7 @@ void NQueenBacktraceIterative(int n, int* x) {
 	PrintQueen(n, x);
 }
 
-int main() {
+int main_2019_10_23() {
 	int n;
 	while (cin >> n, n > 0) {
 
