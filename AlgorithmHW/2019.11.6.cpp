@@ -56,7 +56,7 @@ double L2Norm(pair<double, double> x, pair<double, double> y) {
 	return sqrt(pow(x.first - y.first, 2) + pow(x.second - y.second, 2));
 }
 
-int main() {
+int main_2019_11_13() {
 	srand((unsigned int)time(nullptr));
 	int n;
 	double optimalCost;
@@ -89,5 +89,5 @@ int main() {
 		printf("%d\n", cityOrder[i]);
 	}
 	printf("Cost: %.3f\n", cost);
-
+	return 0;
 }

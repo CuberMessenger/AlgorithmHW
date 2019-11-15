@@ -162,7 +162,7 @@ NextPermutation:
 	return false;
 }
 
-int main() {
+int main_2019_10_23() {
 	int n;
 	while (cin >> n, n > 0) {
 
