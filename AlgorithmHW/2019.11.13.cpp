@@ -107,7 +107,8 @@ void GeneticAlgorithm() {
 }
 
 
-int main() {
+int main2019_11_13() {
 	srand((unsigned int)time(nullptr));
 	GeneticAlgorithm();
+	return 0;
 }
