@@ -33,5 +33,14 @@
     <ClCompile Include="2019.10.23.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="2019.11.6.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="2019.11.13.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="2019.12.2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

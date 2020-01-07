@@ -153,6 +153,9 @@
   <ItemGroup>
     <ClCompile Include="2019.10.23.cpp" />
     <ClCompile Include="2019.10.9.cpp" />
+    <ClCompile Include="2019.11.13.cpp" />
+    <ClCompile Include="2019.11.6.cpp" />
+    <ClCompile Include="2019.12.2.cpp" />
     <ClCompile Include="2019.9.30.cpp" />
     <ClCompile Include="Week3.cpp" />
     <ClCompile Include="Week4.cpp" />
