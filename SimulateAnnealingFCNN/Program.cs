@@ -2,7 +2,7 @@
 using System.Buffers.Binary;
 using System.IO;
 
-namespace SimulateAnnealingFCNN {
+namespace SimulateAnnealingBPNN {
     class Program {
         private static float[,,] TrainData { get; set; }
         private static int[] TrainLabel { get; set; }
@@ -87,19 +87,21 @@ namespace SimulateAnnealingFCNN {
 
             ParseData(trainDataStream, trainLabelStream, testDataStream, testLabelStream);
 
-            //BackPropagationNeuralNetwork normalBPNN = new BackPropagationNeuralNetwork(new int[] { 28 * 28, 8, 10 }, epoch: 5, learnRate: 0.01f);
-            //normalBPNN.Train(TrainData, TrainLabel);
-            //Console.WriteLine("Train Done!");
-            //Console.WriteLine($"Test Accuracy -> {normalBPNN.Test(TestData, TestLabel)}");
+            BackPropagationNeuralNetwork normalBPNN = new BackPropagationNeuralNetwork(new int[] { 28 * 28, 32, 10 }, epoch: 10, learnRate: 0.1f);
+            normalBPNN.Train(TrainData, TrainLabel);
+            Console.WriteLine("Train Done!");
+            Console.WriteLine($"Test Accuracy -> {normalBPNN.Test(TestData, TestLabel)}");
 
-            BackPropagationNeuralNetwork simulateAnnealingBPNN = new BackPropagationNeuralNetwork(new int[] { 28 * 28, 16, 10 }, epoch: 5, learnRate: 0.01f);
-            simulateAnnealingBPNN.Train(TrainData, TrainLabel);
-            Console.WriteLine($"Test Accuracy -> {simulateAnnealingBPNN.Test(TestData, TestLabel)}");
-            simulateAnnealingBPNN.TrainBySimulateAnnealing(TrainData, TrainLabel, TestData, TestLabel);
+            BackPropagationNeuralNetwork simulateAnnealingBPNN = new BackPropagationNeuralNetwork(new int[] { 28 * 28, 32, 10 }, epoch: 10, learnRate: 0.1f);
+            //simulateAnnealingBPNN.Train(TrainData, TrainLabel);
+            //Console.WriteLine($"Test Accuracy -> {simulateAnnealingBPNN.Test(TestData, TestLabel)}");
+            simulateAnnealingBPNN.TrainBySimulateAnnealing(TrainData, TrainLabel);
             Console.WriteLine("Train Done!");
             Console.WriteLine($"Test Accuracy -> {simulateAnnealingBPNN.Test(TestData, TestLabel)}");
 
-
+            for (int i = 0; i < 600; i++) {
+                Console.WriteLine(normalBPNN.LossCurve[i].ToString() + ", " + simulateAnnealingBPNN.LossCurve[i].ToString());
+            }
         }
     }
 }

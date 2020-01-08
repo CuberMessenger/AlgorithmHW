@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SimulateAnnealingFCNN {
+namespace SimulateAnnealingBPNN {
     class FullyConnectedNeuralLayer {
         internal int NumOfNodes { get; set; }
         internal int NumOfWeights { get; set; }
@@ -40,9 +40,9 @@ namespace SimulateAnnealingFCNN {
 
         internal static float SigmoidDerivative(float sigmoid) => sigmoid * (1f - sigmoid);
 
-        private static Random Random = new Random(System.DateTime.Now.Millisecond);
+        private Random Random = new Random(69);
 
-        private static float RandomFloat() => (float)Random.NextDouble() * 2f - 1f;
+        private float RandomFloat() => (float)Random.NextDouble() * 2f - 1f;
 
         internal FullyConnectedNeuralLayer(int numOfNodes, int numOfWeights, BackPropagationNeuralNetwork currentNetwork) {
             NumOfNodes = numOfNodes;
@@ -68,10 +68,13 @@ namespace SimulateAnnealingFCNN {
 
         internal void Forward() {
             for (int n = 0; n < NumOfNodes; n++) {
+                //加上偏置
                 Outputs[n] = Biases[n];
+                //加上前一层节点的输出与权重的乘积
                 for (int i = 0; i < NumOfWeights; i++) {
                     Outputs[n] += Weights[n, i] * PreviousLayer.Outputs[i];
                 }
+                //经过激活函数
                 Outputs[n] = ActivateFunction(Outputs[n]);
             }
         }
@@ -79,13 +82,17 @@ namespace SimulateAnnealingFCNN {
         internal void Backward() {
             for (int n = 0; n < NumOfNodes; n++) {
                 Errors[n] = 0f;
+                //计算梯度，为后一层用到了当前节点的输出的节点的梯度乘对应权重的和
                 for (int i = 0; i < NextLayer.NumOfNodes; i++) {
                     Errors[n] += NextLayer.Errors[i] * NextLayer.Weights[i, n];
                 }
+                //计算到激活函数前的梯度
                 Errors[n] *= ActivationDerivative(Outputs[n]);
 
+                //根据梯度更新偏置
                 Biases[n] -= CurrentNetwork.LearnRate * Errors[n];
                 for (int i = 0; i < NumOfWeights; i++) {
+                    //根据梯度更新权重
                     Weights[n, i] -= CurrentNetwork.LearnRate * Errors[n] * PreviousLayer.Outputs[i];
                 }
             }
@@ -111,6 +118,8 @@ namespace SimulateAnnealingFCNN {
         internal Func<float[], int, float[]> LossFunction { get; set; }
         internal Func<float[], int, float[]> LossFunctionDerivative { get; set; }
 
+        internal float[] LossCurve { get; set; }
+
         private static Random Random = new Random(System.DateTime.Now.Millisecond);
 
         internal static float[] CrossEntropy(float[] outputs, int target) {
@@ -135,6 +144,7 @@ namespace SimulateAnnealingFCNN {
         }
 
         internal BackPropagationNeuralNetwork(int[] networkShape, int epoch, float learnRate) {
+            LossCurve = new float[600];
             Epoch = epoch;
             LearnRate = learnRate;
             Losses = new float[epoch];
@@ -202,8 +212,9 @@ namespace SimulateAnnealingFCNN {
         }
 
         internal void Train(float[,,] trainData, int[] trainLabel) {
+            int noi = 0, noc = 0;
             float[] delta = null;
-            //int numOfInstance = 10000;
+            //int numOfInstance = 50000;
             int numOfInstance = trainData.GetLength(0);
             for (int e = 0; e < Epoch; e++) {
                 for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
@@ -214,8 +225,8 @@ namespace SimulateAnnealingFCNN {
                         Layers[i].Forward();
                     }
 
-                    var loss = LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]);
-                    Losses[e] += loss.Average();
+                    var loss = LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]).Average();
+                    Losses[0] += loss;
 
                     delta = LossFunctionDerivative(Layers.Last().Outputs, trainLabel[instanceIndex]);
 
@@ -226,171 +237,78 @@ namespace SimulateAnnealingFCNN {
                     }
 
                     if (instanceIndex % 1000 == 0) {
-                        Console.WriteLine($"Epoch {e}, Loss -> {Losses[e] / (instanceIndex + 1)}");
+                        Console.WriteLine($"Epoch {e}, Loss -> {Losses[0] / (noi + 1)}");
+                        LossCurve[noc++] = Losses[0] / (noi + 1);
+                        noi += 1000;
                     }
                 }
                 LearnRate *= 0.8f;
             }
         }
 
-        internal void TrainBySimulateAnnealing(float[,,] trainData, int[] trainLabel, float[,,] testData, int[] testLabel) {
-            int numOfBatch = 100;
+        internal void TrainBySimulateAnnealing(float[,,] trainData, int[] trainLabel) {
+            double Temperature = 0.1d;
+            int noi = 0, noc = 0;
+            float loss, newLoss, deltaLoss;
+            float[] delta = null;
+            //int numOfInstance = 50000;
             int numOfInstance = trainData.GetLength(0);
-            double Temperature = 1d;
-            double loss = 0d, newLoss = 0d;
-            float[] deltaW;
-            float[] deltaB;
-            int n, l = 1;
-            (float[], float[,])[] bestWeight = null;
-            double bestLoss = double.MaxValue;
-
-            double EvaluateBatch(ref int instanceIndex) {
-                double answer = 0d;
-                for (int x = 0; x < numOfBatch; x++, instanceIndex = (instanceIndex + 1) % numOfInstance) {
+            for (int e = 0; e < Epoch; e++) {
+                for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
                     SetInput(trainData, instanceIndex, Layers.First());
                     for (int i = 1; i < Layers.Length; i++) {
                         Layers[i].Forward();
                     }
-                    answer += LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]).Average();
-                }
-                answer /= numOfBatch;
-                return answer;
-            }
 
-            void FindNeighbour() {
-                n = Random.Next(0, Layers[l].NumOfNodes);
-                deltaW = new float[Layers[l].NumOfWeights];
-                deltaB = new float[Layers[l].NumOfNodes];
-                for (int i = 0; i < deltaW.Length; i++) {
-                    deltaW[i] = Random.NextDouble() > 0.5d ? 0.01f : -0.01f;
-                    Layers[l].Weights[n, i] += deltaW[i];
-                }
-                for (int i = 0; i < deltaB.Length; i++) {
-                    deltaB[i] = Random.NextDouble() > 0.5d ? 0.01f : -0.01f;
-                    Layers[l].Biases[i] += deltaB[i];
-                }
-            }
+                    loss = LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]).Average();
+                    Losses[0] += loss;
 
-            void GoBackFromNeighbour() {
-                for (int i = 0; i < deltaW.Length; i++) {
-                    Layers[l].Weights[n, i] -= deltaW[i];
-                }
-                for (int i = 0; i < deltaB.Length; i++) {
-                    Layers[l].Biases[i] -= deltaB[i];
-                }
-            }
+                    delta = LossFunctionDerivative(Layers.Last().Outputs, trainLabel[instanceIndex]);
 
-            int instanceIndex = 0;
-            while (Temperature > 1e-4) {
-                for (int t = 0; t < 10; t++) {
-                    loss = EvaluateBatch(ref instanceIndex);
-                    if (loss < bestLoss) {
-                        bestLoss = loss;
-                        bestWeight = SaveWeights();
-                        float acc = Test(testData, testLabel);
-                        Console.WriteLine("Loss -> {0}\tTemperature -> {1}\tAccuracy -> {2}", Math.Round(loss, 3), Temperature, acc);
+                    //Backward
+                    Layers.Last().OutputLayerBackward(delta);
+                    for (int i = Layers.Length - 2; i > 0; i--) {
+                        Layers[i].Backward();
+                    }
+                    //SA
+                    SetInput(trainData, instanceIndex, Layers.First());
+                    for (int i = 1; i < Layers.Length; i++) {
+                        Layers[i].Forward();
                     }
 
-                    instanceIndex -= numOfBatch;
-                    if (instanceIndex < 0) {
-                        instanceIndex += numOfInstance;
-                    }
-
-                    FindNeighbour();
-
-                    newLoss = EvaluateBatch(ref instanceIndex);
-
-                    double deltaLoss = newLoss - loss;
+                    newLoss = LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]).Average();
+                    deltaLoss = newLoss - loss;
                     if (deltaLoss >= 0 && (Random.NextDouble() >= Math.Exp(-(deltaLoss / Temperature)))) {
-                        GoBackFromNeighbour();
+                        Console.WriteLine("!!!!!!!!!!!!!!!!!!!!");
+                        int l = Random.Next(1, Layers.Length);
+                        int n = Random.Next(0, Layers[l].NumOfNodes);
+                        var deltaW = new float[Layers[l].NumOfWeights];
+                        var deltaB = new float[Layers[l].NumOfNodes];
+                        for (int i = 0; i < deltaW.Length; i++) {
+                            deltaW[i] = Random.NextDouble() > 0.5d ? 0.1f : -0.1f;
+                            Layers[l].Weights[n, i] += deltaW[i];
+                        }
+                        for (int i = 0; i < deltaB.Length; i++) {
+                            deltaB[i] = Random.NextDouble() > 0.5d ? 0.1f : -0.1f;
+                            Layers[l].Biases[i] += deltaB[i];
+                        }
+                    }
+
+                    if (instanceIndex % 1000 == 0) {
+                        Console.WriteLine($"Epoch {e}\tT -> {Math.Round(Temperature, 3)}\tLoss -> {Losses[0] / (noi + 1)}");
+                        LossCurve[noc++] = Losses[0] / (noi + 1);
+                        noi += 1000;
+                        Temperature *= 0.99d;
                     }
                 }
-                if (instanceIndex == 0) {
-                }
-                Temperature *= 0.99d;
+                LearnRate *= 0.8f;
             }
-
-            LoadWeights(bestWeight);
         }
 
-        //internal void TrainBySimulateAnnealing(float[,,] trainData, int[] trainLabel) {
-        //    int numOfBatch = 200;
-        //    int numOfInstance = trainData.GetLength(0);
-        //    double Temperature = 1d;
-        //    double loss = 0d, newLoss = 0d;
-        //    float[] deltaW;
-        //    float[] deltaB;
-        //    int n, l;
-
-        //    double EvaluateBatch(ref int instanceIndex) {
-        //        double answer = 0d;
-        //        for (int x = 0; x < numOfBatch; x++, instanceIndex = (instanceIndex + 1) % numOfInstance) {
-        //            SetInput(trainData, instanceIndex, Layers.First());
-        //            for (int i = 1; i < Layers.Length; i++) {
-        //                Layers[i].Forward();
-        //            }
-        //            answer += LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]).Average();
-        //        }
-        //        answer /= numOfBatch;
-        //        return answer;
-        //    }
-
-        //    void FindNeighbour() {
-        //        l = Random.Next(1, Layers.Length);
-        //        n = Random.Next(0, Layers[l].NumOfNodes);
-        //        deltaW = new float[Layers[l].NumOfWeights];
-        //        deltaB = new float[Layers[l].NumOfNodes];
-        //        for (int i = 0; i < deltaW.Length; i++) {
-        //            deltaW[i] = Random.NextDouble() > 0.5d ? 0.01f : -0.01f;
-        //            Layers[l].Weights[n, i] += deltaW[i];
-        //        }
-        //        for (int i = 0; i < deltaB.Length; i++) {
-        //            deltaB[i] = Random.NextDouble() > 0.5d ? 0.01f : -0.01f;
-        //            Layers[l].Biases[i] += deltaB[i];
-        //        }
-        //    }
-
-        //    void GoBackFromNeighbour() {
-        //        for (int i = 0; i < deltaW.Length; i++) {
-        //            Layers[l].Weights[n, i] -= deltaW[i];
-        //        }
-        //        for (int i = 0; i < deltaB.Length; i++) {
-        //            Layers[l].Biases[i] -= deltaB[i];
-        //        }
-        //    }
-
-        //    int instanceIndex = 0;
-        //    while (Temperature > 1e-7) {
-        //        for (int t = 0; t < 10; t++) {
-        //            loss = EvaluateBatch(ref instanceIndex);
-
-        //            instanceIndex -= numOfBatch;
-        //            if (instanceIndex < 0) {
-        //                instanceIndex += numOfInstance;
-        //            }
-
-        //            FindNeighbour();
-
-        //            newLoss = EvaluateBatch(ref instanceIndex);
-
-        //            double deltaLoss = newLoss - loss;
-        //            if (deltaLoss >= 0 && (Random.NextDouble() >= Math.Exp(-(deltaLoss / Temperature)))) {
-        //                GoBackFromNeighbour();
-        //            }
-        //        }
-        //        if (instanceIndex == 0) {
-        //            Console.WriteLine("Loss -> {0}\tTemperature -> {1}", Math.Round(loss, 3), Temperature, 6);
-        //        }
-        //        Temperature *= 0.99d;
-        //    }
-
-
-        //}
-
-        internal float Test(float[,,] testData, int[] testLabel) {
+        internal float Test(float[,,] testData, int[] testLabel, int startIndex = 0) {
             float accuracy = 0f;
             int numOfInstance = testData.GetLength(0);
-            for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
+            for (int instanceIndex = startIndex; instanceIndex < numOfInstance; instanceIndex++) {
                 accuracy += TestOne(testData, instanceIndex) == testLabel[instanceIndex] ? 1f : 0f;
             }
             accuracy /= numOfInstance;
